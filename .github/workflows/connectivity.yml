@@ -1,0 +1,26 @@
+name: Gateway connectivity diagnostic
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [diagnose-gateway]
+    paths: [.github/workflows/connectivity.yml]
+
+permissions: {}
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Check public endpoints from GitHub runner
+        shell: bash
+        run: |
+          for host in check sub edge probe; do
+            path=/admin
+            if [ "$host" = check ]; then path=/check; fi
+            echo "=== $host.newupip.site$path ==="
+            curl --connect-timeout 10 --max-time 20 -sS -D - \
+              "https://$host.newupip.site$path"
+            echo
+          done
